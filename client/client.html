@@ -2,11 +2,70 @@
 <html lang="en">
 <head>
   <title>Our simple HTTP server</title>
-  <link rel="stylesheet" type="text/css" href="/style.css">
+  <link rel="stylesheet" type="text/css" href="style.css">
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
   <script type="text/babel">
+    var sendButton;
+    var typeSelector;
+    var pageSelector;
 
+    const respond = (xhr) => {
+        const content = document.querySelector("#content");
+        
+        if(typeSelector.value === 'application/json'){const obj = JSON.parse(xhr.response);}
+        else if(typeSelector.value === 'text.xml'){const obj = $parseXML(xhr.response);}
+        
+        
+        switch(xhr.status) {
+            case 200:
+              content.innerHTML = `<b>Success</b><br />Message: This is a successful response`;
+              break;
+            case 400:
+              content.innerHTML = `<b>Bad Request</b><br />Message: Missing valid query parameter set to true`;
+              break;
+            case 401:
+              content.innerHTML = `<b>Unauthorized</b><br />Message: Missing loggedIn query parameter set to yes`;
+              break;
+            case 403:
+              content.innerHTML = `<b>Forbidden</b><br />Message: You do not have access to this content.`;
+              break;
+            case 404:
+              content.innerHTML = `<b>Resource Not Found</b><br />Message: The page you are looking for was not found.`;
+              break;
+            case 500:
+              content.innerHTML = `<b>Internal Server Error</b><br />Message: Internal Server Error. Something went wrong.`;
+              break;
+            case 501:
+              content.innerHTML = `<b>Not Implemented</b><br />Message: A get request for this page has not been implemented yet. Check again later for updated content.`;
+              break;
+            default:
+              content.innerHTML =  `Error code not implemented by client.`;
+              break;
+        }
+    };
+
+    // send an ajax request for the file
+    const sendAjax = (url, type) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', url);
+        xhr.setRequestHeader("ACCEPT", type);
+        
+        xhr.onload = () => respond(xhr);
+        xhr.send();
+    };
+
+    const init = () => {
+        sendButton = document.querySelector("#send");
+        typeSelector = document.querySelector("#type");
+        pageSelector = document.querySelector("#page");
+        
+        sendButton.addEventListener('click', function(){
+            sendAjax(pageSelector.value, typeSelector.value);
+        });
+    };
+
+    window.onload = init;
   </script>
 </head>
 <body>
